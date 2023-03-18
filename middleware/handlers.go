@@ -21,7 +21,7 @@ type response struct {
 }
 
 // crear connection with postgres db
-func CreateConnection() *sql.DB {
+func createConnection() *sql.DB {
 	err := godotenv.Load(".env")
 	if err != nil {
 		log.Fatal("Error loading .env file ")
@@ -176,7 +176,7 @@ func DaleteStock(w http.ResponseWriter, r *http.Request) {
 
 // insetar un stock en la DB
 func insertStock(stock models.Stock) int64 {
-	db := CreateConnection()
+	db := createConnection()
 	defer db.Close()
 
 }
