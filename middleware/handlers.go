@@ -313,3 +313,5 @@ func deleteStock(id int64) int64 {
 
 	return rowsAffected
 }
+
+//terminado
