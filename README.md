@@ -2,13 +2,14 @@
 Postgres with golang  using  lib/pq and sql/database 
 
 <h3> paquetes  usados </h3>
+
 - github.com/lib/pq 
 para los driver de postgresSQL 
 
 - github.com/joho/godotenv
  para poder trabajar con el archivo .env
  
- -github.com/gorilla/mux
+ - github.com/gorilla/mux
  para manejar router y para obtener los parametros de la misma 
  
 <h3> Descripcion del proyecyo </h3>
