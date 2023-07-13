@@ -74,7 +74,7 @@ func CreateStock(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// GetAllStock trera todos los stock
+// GetAllStock trae todos los stock
 func GetAllStock(w http.ResponseWriter, r *http.Request) {
 	//traer todos los stock de la base de datos
 	stock, err := getAllStock()
