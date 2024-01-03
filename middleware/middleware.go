@@ -24,15 +24,13 @@ type response struct {
 // crear connection with postgres db
 func createConnection() *sql.DB {
 	err := godotenv.Load(".env")
-
 	if err != nil {
 		log.Fatal("Error loading .env file ")
 	}
 	// abrir la coneccion
 	db, err := sql.Open("postgres", os.Getenv("POSTGRES_URL"))
-
 	if err != nil {
-		fmt.Println("error linea 34")
+		log.Fatalf("Error connection %v", err)
 		panic(err)
 
 	}
@@ -41,21 +39,21 @@ func createConnection() *sql.DB {
 	err = db.Ping()
 
 	if err != nil {
-		fmt.Println("error linea 42")
+		log.Fatalf("error  database connection: %v", err)
 		panic(err)
 	}
 
-	fmt.Println("Successfully connected to postgres")
+	log.Printf("Successfully connected to postgres")
 	return db
 	// devolver la conecion
 }
 
 // la funcion crea un stock en la  base de datos de postgres
 func CreateStock(w http.ResponseWriter, r *http.Request) {
-	//crear un stock vacio de tpi models.Stock
+	// crear un stock vacio de tpi models.Stock
 	var stock models.Stock
 
-	//decodificar la peticion para stock
+	// decodificar la peticion para stock
 	err := json.NewDecoder(r.Body).Decode(&stock)
 	if err != nil {
 		log.Fatalf("Unable to decode the request body . %v", err)
@@ -63,7 +61,7 @@ func CreateStock(w http.ResponseWriter, r *http.Request) {
 	// llama a la funcion  insert Stock  y pasa la struct
 	insertID := insertStock(stock)
 
-	//formato de respuesta
+	// formato de respuesta
 	res := response{
 		ID:      insertID,
 		Message: "Stock created successfully",
@@ -71,22 +69,19 @@ func CreateStock(w http.ResponseWriter, r *http.Request) {
 
 	// envio de respuesta
 	json.NewEncoder(w).Encode(res)
-
 }
 
 // GetAllStock trae todos los stock
 func GetAllStock(w http.ResponseWriter, r *http.Request) {
-	//traer todos los stock de la base de datos
+	// traer todos los stock de la base de datos
 	stock, err := getAllStock()
-
-	//en caso  de un error
+	// en caso  de un error
 	if err != nil {
 		log.Fatalf("Unable to get all stock %v", err)
 	}
 
-	//envio de todos los stocks en formato jsoon
+	// envio de todos los stocks en formato jsoon
 	json.NewEncoder(w).Encode(stock)
-
 }
 
 // GetStock retornara un stock por id
@@ -94,38 +89,33 @@ func GetStock(w http.ResponseWriter, r *http.Request) {
 	// obtener la variable stockid desde el request
 	paramas := mux.Vars(r)
 
-	//convertir the id de string a int
-	//para trabajar con el
+	// convertir the id de string a int
+	// para trabajar con el
 	id, err := strconv.Atoi(paramas["id"])
-
 	if err != nil {
 		log.Fatalf("unable to convert the string int int %v", err)
 	}
-	//llama a la funcion getStock con el id del strcok a buscar
+	// llama a la funcion getStock con el id del strcok a buscar
 	stock, err := getStock(int64(id))
-
 	if err != nil {
 		log.Fatalf("uncable to get stock .%v", err)
 	}
 
 	// enviar el json
 	json.NewEncoder(w).Encode(stock)
-
 }
 
 // actualizara un  stock en postgres db
 func UpdateStock(w http.ResponseWriter, r *http.Request) {
-
 	// obtener stockid desde r , la llave es 'id'
 	paramas := mux.Vars(r)
 
-	//covertir el id de tipo string a int
+	// covertir el id de tipo string a int
 	id, err := strconv.Atoi(paramas["id"])
-
 	if err != nil {
 		log.Fatalf("Unable to decode the request body. %v", err)
 	}
-	//crear un struc de stock
+	// crear un struc de stock
 	var stock models.Stock
 	err = json.NewDecoder(r.Body).Decode(&stock)
 	if err != nil {
@@ -149,13 +139,11 @@ func UpdateStock(w http.ResponseWriter, r *http.Request) {
 
 // elimina una fila de la base de datos
 func DaleteStock(w http.ResponseWriter, r *http.Request) {
-
-	//trae the stockid desde el request
+	// trae the stockid desde el request
 	params := mux.Vars(r)
 
 	// convierte el id de string a int
 	id, err := strconv.Atoi(params["id"])
-
 	if err != nil {
 		log.Fatalf("Unable to covert the string into int . %v", err)
 	}
@@ -166,16 +154,15 @@ func DaleteStock(w http.ResponseWriter, r *http.Request) {
 	// mensaje
 	msg := fmt.Sprintf("Stock updated successfully. Total rows/record affected %v", deletedRows)
 
-	//struct para  enviar
+	// struct para  enviar
 	res := response{
 		ID:      int64(id),
 		Message: msg,
 	}
 
-	//envio de json
+	// envio de json
 
 	json.NewEncoder(w).Encode(res)
-
 }
 
 //----------------------------handler funcions ------------------------------------------------
@@ -190,19 +177,17 @@ func insertStock(stock models.Stock) int64 {
 	var id int64
 
 	err := db.QueryRow(sqlStatement, stock.Name, stock.Price, stock.Company).Scan(&id)
-
 	if err != nil {
 		log.Fatalf("Unable to excute the query %v", err)
 	}
 
 	fmt.Printf("insert un single record %v", id)
 	return id
-
 }
 
 // getStock retorna  el stock del id que se ingresa
 func getStock(id int64) (models.Stock, error) {
-	//crear una conexion a postgrs
+	// crear una conexion a postgrs
 	db := createConnection()
 
 	// cerrar conexion
@@ -226,13 +211,12 @@ func getStock(id int64) (models.Stock, error) {
 	default:
 		log.Fatalf("Unable to scan the row %v", err)
 	}
-	//retorna una struct vacia en caso de error
+	// retorna una struct vacia en caso de error
 	return stock, err
-
 }
 
 func getAllStock() ([]models.Stock, error) {
-	//crear la conexion
+	// crear la conexion
 	db := createConnection()
 
 	defer db.Close()
@@ -244,7 +228,6 @@ func getAllStock() ([]models.Stock, error) {
 	sqlStatement := `SELECT * FROM stocks `
 
 	rows, err := db.Query(sqlStatement)
-
 	if err != nil {
 		log.Fatalf("Unable to execute the query %v", err)
 	}
@@ -258,15 +241,13 @@ func getAllStock() ([]models.Stock, error) {
 		if err != nil {
 			log.Fatalf("Unable to scan the row %v", err)
 		}
-		//agrega el stock al slice
+		// agrega el stock al slice
 		stocks = append(stocks, stock)
 	}
 	return stocks, err
-
 }
 
 func updateStock(id int64, stock models.Stock) int64 {
-
 	db := createConnection()
 
 	defer db.Close()
@@ -274,19 +255,17 @@ func updateStock(id int64, stock models.Stock) int64 {
 	// creacion de query Update
 	sqlStatement := `UPDATE stocks SET name=$2, price=$3 , company=$4 WHERE stockid=$1`
 
-	//ejecutar consulta
+	// ejecutar consulta
 	res, err := db.Exec(sqlStatement, id, stock.Name, stock.Price, stock.Company)
-
 	if err != nil {
 		log.Fatalf("Unable to execute the query . %v ", err)
 	}
 	// ver cuantas filas fueron afectadas
 	rowsAffected, err := res.RowsAffected()
-
 	if err != nil {
 		log.Fatalf("Error while checking the affected rows %v", err)
 	}
-	fmt.Printf("Total rows/record affected %v", rowsAffected)
+	log.Printf("Total rows/record affected %v", rowsAffected)
 
 	return rowsAffected
 }
@@ -299,13 +278,11 @@ func deleteStock(id int64) int64 {
 	sqlStatemant := `DELETE FROM stocks WHERE stockid=$1`
 
 	res, err := db.Exec(sqlStatemant, id)
-
 	if err != nil {
 		log.Fatalf("Unable to execute the query . %v", err)
 	}
 
 	rowsAffected, err := res.RowsAffected()
-
 	if err != nil {
 		log.Fatalf("Error while checking the affected rows %v", err)
 	}
@@ -314,4 +291,4 @@ func deleteStock(id int64) int64 {
 	return rowsAffected
 }
 
-//terminado
+// terminado

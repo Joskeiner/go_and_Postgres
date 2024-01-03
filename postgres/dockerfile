@@ -1,0 +1,11 @@
+
+# Dockerfile para PostgreSQL
+
+FROM postgres:latest
+
+# Copiar el script SQL al directorio /docker-entrypoint-initdb.d/
+COPY init.sql /docker-entrypoint-initdb.d/
+
+# Cambiar permisos y hacer ejecutable el script SQL
+RUN chmod +x /docker-entrypoint-initdb.d/init.sql
+
