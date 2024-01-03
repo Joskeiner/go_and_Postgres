@@ -1,0 +1,48 @@
+version: '3.7'
+services:
+  golang:
+    container_name: appGo
+    env_file:
+        - .env
+    build:
+        context: .
+    image: app-go-joskeiner
+    command: /usr/local/bin/main
+    restart: always
+    networks:
+        - backend
+        - database
+    volumes:
+      - ./:/appGo
+    ports:
+      - "8080:8080"
+
+  postgres:
+   build:
+      context: ./postgres
+      dockerfile: dockerfile
+   container_name: db
+   image: postgres-custom
+   restart: always
+   networks:
+      - database
+   environment:
+     POSTGRES_USER: ${POSTGRES_USER}
+     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+     POSTGRES_DB: ${POSTGRES_DB}
+     PGDATA: ${PGDATA}
+   volumes:
+      - postgres:/data/pgdata
+   ports:
+      - "5432:5432"
+
+
+networks:
+  backend:
+    name: backend
+    external: true
+  database:
+    name: database
+    external: true
+volumes:
+   postgres:
