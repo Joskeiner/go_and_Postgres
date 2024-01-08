@@ -24,4 +24,6 @@ USER appgo
 
 EXPOSE 8080
 
-CMD ["main"]
+CMD ["/main"]
+
+#https://github.com/pabpereza/curated-dockerfiles-examples/blob/main/go/simple_with_packages/Dockerfile
