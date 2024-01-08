@@ -1,27 +1,27 @@
-FROM golang:1.20
+FROM golang:1.20 AS builder
 
 WORKDIR /app
 
-COPY .  .
-#COPY go.mod .
-
-#COPY go.sum .
-
-#COPY *.go  .
+COPY go.mod  go.sum ./
 
 RUN go mod download
 
+COPY .  .
+
 #Build
 
-RUN go build -o main .
+RUN go build -o /main
 
-RUN chmod +x main
+RUN echo "appgo:x:65534:65534:appgo:/:" > /etc_passwd
 
-RUN mv main /usr/local/bin/
-#RUN CGO_ENABLED=0 GOOS=linux go build -o /main
+FROM scratch
+
+COPY --from=builder /etc_passwd /etc/passwd
+
+COPY --chown=appgo:appgo --from=builder /main /main
+
+USER appgo
 
 EXPOSE 8080
-
-
 
 CMD ["main"]
